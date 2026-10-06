@@ -42,7 +42,7 @@ body::before {
   opacity: 0.6;
   animation: twinkleStars 4s infinite linear;
   z-index: -1;
-  pointer-events: none; 
+  pointer-events: none;
 }
 @keyframes twinkleStars {
   0% { transform: translateY(0); opacity: 0.4; }
@@ -133,8 +133,8 @@ p { font-size: 13px; color: #e0e0e0; margin-bottom: 20px; line-height: 1.4; }
   filter: brightness(1.1);
 }
 
-/* Pop-up Pesan Salah */
-#popupMessage {
+/* Pop-up Pesan Salah & Benar */
+#popupWrong {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -143,7 +143,7 @@ p { font-size: 13px; color: #e0e0e0; margin-bottom: 20px; line-height: 1.4; }
   border: 4px solid #fff;
   padding: 20px 30px;
   border-radius: 20px;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: bold;
   color: #fff;
   box-shadow: 0 10px 25px rgba(0,0,0,0.6);
@@ -152,11 +152,31 @@ p { font-size: 13px; color: #e0e0e0; margin-bottom: 20px; line-height: 1.4; }
   text-shadow: 2px 2px 0px #000;
   animation: popIn 0.3s ease forwards;
 }
+
+#popupCorrect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  background: rgba(56, 176, 0, 0.95);
+  border: 4px solid #fff;
+  padding: 20px 30px;
+  border-radius: 20px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+  z-index: 99;
+  display: none;
+  text-shadow: 2px 2px 0px #000;
+  animation: popIn 0.3s ease forwards;
+}
+
 @keyframes popIn {
   to { transform: translate(-50%, -50%) scale(1); }
 }
 
-/* Sesi 3: Lab Eksperimen Bebas */
+/* Sesi 3 & 4 */
 .lab-selection {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -246,8 +266,9 @@ p { font-size: 13px; color: #e0e0e0; margin-bottom: 20px; line-height: 1.4; }
 <body>
 
 <div class="game-container">
-  <!-- POP-UP SALAH -->
-  <div id="popupMessage">wleee 😝😝 kamu salah</div>
+  <!-- POP-UP PESAN SALAH & BENAR -->
+  <div id="popupWrong">wleee 😝😝 kamu salah...!!!</div>
+  <div id="popupCorrect">yeeeyyy kamu benaaarr 🥳🥳...!!!</div>
 
   <!-- SESI 1: KAMUS WARNA UNIVERSAL -->
   <div id="introScreen" class="screen active-screen">
@@ -282,7 +303,6 @@ p { font-size: 13px; color: #e0e0e0; margin-bottom: 20px; line-height: 1.4; }
       <span id="evaluationText" style="font-size: 11px; display: block; margin-top: 5px; line-height: 1.3;"></span>
     </div>
 
-    <!-- Tombol Lab Eksperimen (Hanya muncul jika sisa nyawa >= 3) -->
     <div id="labUnlockContainer" style="display: none;">
       <button class="action-btn" onclick="goToFreeLab()">Masuk Lab Eksperimen Bebas 🧪✨</button>
     </div>
@@ -290,7 +310,7 @@ p { font-size: 13px; color: #e0e0e0; margin-bottom: 20px; line-height: 1.4; }
     <button class="action-btn" style="background: linear-gradient(135deg, #707070, #404040); box-shadow: 0 6px 0 #202020; margin-top: 8px;" onclick="restartGame()">Ulangi Misi 🚀</button>
   </div>
 
-  <!-- SESI 4: LAB EKSPERIMEN BEBAS SEMUA WARNA -->
+  <!-- SESI 4: LAB EKSPERIMEN BEBAS -->
   <div id="freeLabScreen" class="screen">
     <h2>🧪 Lab Kimia Universal</h2>
     <p>Pilih 2 warna apa saja dari semua kategori untuk dicampur bebas!</p>
@@ -414,28 +434,36 @@ function nextRound() {
     let btn = document.createElement("button");
     btn.className = "color-btn";
     btn.style.backgroundColor = col.code;
-    btn.onclick = () => checkAnswer(col.name, btn);
+    btn.onclick = () => checkAnswer(col.name);
     container.appendChild(btn);
   });
 }
 
-function checkAnswer(selectedName, btnElement) {
+function checkAnswer(selectedName) {
+  let allBtns = document.querySelectorAll(".color-btn");
+  allBtns.forEach(b => b.style.pointerEvents = "none"); // Kunci tombol sementara
+
   if (selectedName === currentTarget.name) {
     score++;
-    round++;
-    nextRound();
+    
+    // Tampilkan pop-up "yeeeyyy kamu benaaarr 🥳🥳"
+    let popup = document.getElementById("popupCorrect");
+    popup.style.display = "block";
+
+    setTimeout(() => {
+      popup.style.display = "none";
+      allBtns.forEach(b => b.style.pointerEvents = "auto");
+      round++;
+      nextRound();
+    }, 1500);
+
   } else {
     hearts--;
     
     // Tampilkan pop-up "wleee 😝😝 kamu salah"
-    let popup = document.getElementById("popupMessage");
+    let popup = document.getElementById("popupWrong");
     popup.style.display = "block";
 
-    // Nonaktifkan tombol sementara agar tidak diklik dobel
-    let allBtns = document.querySelectorAll(".color-btn");
-    allBtns.forEach(b => b.style.pointerEvents = "none");
-
-    // Sembunyikan pop-up setelah 1.5 detik lalu lanjut ronde
     setTimeout(() => {
       popup.style.display = "none";
       allBtns.forEach(b => b.style.pointerEvents = "auto");
@@ -585,4 +613,3 @@ loadIntroColor();
 </script>
 </body>
 </html>
-
