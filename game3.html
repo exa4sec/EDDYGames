@@ -237,7 +237,7 @@
             cursor: grab;
             touch-action: none;
             user-select: none;
-            -webkit-user-drag: element; /* Mengizinkan drag mulus di browser TV/Mobile */
+            -webkit-user-drag: element;
             transition: transform 0.1s;
         }
         .draggable-planet:active {
@@ -402,7 +402,6 @@
             17: 7, 54: 34, 62: 19, 87: 24, 95: 75, 99: 78
         };
 
-        // Mencegah menu konteks sistem TV muncul saat menekan lama / klik kanan
         document.addEventListener('contextmenu', event => event.preventDefault());
 
         function buatPapan() {
@@ -455,6 +454,7 @@
             }
         }
 
+        // Render Tangga Realistis & Tali Tali di Canvas
         function gambarTaliDanTanggaCanvas() {
             const canvas = document.getElementById("game-canvas");
             const board = document.getElementById("game-board");
@@ -483,6 +483,7 @@
                     let isLadder = end > start;
 
                     if (!isLadder) {
+                        // Gambar Tali / Ular Melengkung
                         let cp1x = x1 + (x2 - x1) * 0.25 + 70;
                         let cp1y = y1 + (y2 - y1) * 0.25 - 50;
                         let cp2x = x1 + (x2 - x1) * 0.75 - 70;
@@ -505,22 +506,39 @@
                         ctx.stroke();
                         ctx.setLineDash([]);
                     } else {
+                        // Gambar Tangga Realistis (Dua Tiang + Anak Tangga Melintang)
                         let angle = Math.atan2(y2 - y1, x2 - x1);
-                        let perpX = Math.cos(angle + Math.PI / 2) * 6;
-                        let perpY = Math.sin(angle + Math.PI / 2) * 6;
+                        let perpX = Math.cos(angle + Math.PI / 2) * 8;
+                        let perpY = Math.sin(angle + Math.PI / 2) * 8;
 
-                        ctx.strokeStyle = "#8e44ad";
-                        ctx.lineWidth = 3;
-
+                        // Tiang Kiri Tangga
+                        ctx.strokeStyle = "#27ae60";
+                        ctx.lineWidth = 4;
                         ctx.beginPath();
                         ctx.moveTo(x1 + perpX, y1 + perpY);
                         ctx.lineTo(x2 + perpX, y2 + perpY);
                         ctx.stroke();
 
+                        // Tiang Kanan Tangga
                         ctx.beginPath();
                         ctx.moveTo(x1 - perpX, y1 - perpY);
                         ctx.lineTo(x2 - perpX, y2 - perpY);
                         ctx.stroke();
+
+                        // Anak Tangga Melintang di Antara Kedua Tiang
+                        let stepsCount = Math.floor(Math.hypot(x2 - x1, y2 - y1) / 14);
+                        for (let s = 1; s < stepsCount; s++) {
+                            let t = s / stepsCount;
+                            let curX = x1 + (x2 - x1) * t;
+                            let curY = y1 + (y2 - y1) * t;
+
+                            ctx.beginPath();
+                            ctx.moveTo(curX + perpX, curY + perpY);
+                            ctx.lineTo(curX - perpX, curY - perpY);
+                            ctx.strokeStyle = "#2ecc71";
+                            ctx.lineWidth = 3;
+                            ctx.stroke();
+                        }
                     }
                 }
             }
@@ -605,7 +623,6 @@
             p.draggable = true;
             p.id = idUnik;
             
-            // Mencegah menu sistem TV terpanggil saat disentuh lama
             p.addEventListener('touchstart', function(e) {
                 e.stopPropagation();
             }, {passive: true});
@@ -656,12 +673,18 @@
                 document.getElementById("modal-desc").innerText = `Hebat sekali! Jawaban ${kunciJawaban} pas. Roket meluncur maju!`;
                 
                 targetPosisi = posisiPion + kunciJawaban;
-                if (targetPosisi > totalKotak) targetPosisi = totalKotak;
+                if (targetPosisi >= totalKotak) {
+                    targetPosisi = totalKotak;
+                }
 
                 callbackSetelahModal = function() {
                     gerakkanPionKotakKeKotak(posisiPion, targetPosisi, function() {
                         posisiPion = targetPosisi;
-                        cekTanggaAtauTali(true);
+                        if (posisiPion === totalKotak) {
+                            tampilkanPopupMenang();
+                        } else {
+                            cekTanggaAtauTali(true);
+                        }
                     });
                 };
             } else {
@@ -681,6 +704,27 @@
             }
 
             document.getElementById("custom-modal").classList.add("show");
+        }
+
+        // Pop-up Spesial Kemenangan di Kotak 100
+        function tampilkanPopupMenang() {
+            setTimeout(() => {
+                const modalPlanetsContainer = document.getElementById("modal-planets-container");
+                modalPlanetsContainer.innerHTML = "🏆🚀✨";
+                
+                document.getElementById("modal-title").innerText = "SELAMAT! 🏆";
+                document.getElementById("modal-title").style.color = "#ffd166";
+                document.getElementById("modal-desc").innerText = "Kamu berhasil mencapai garis finis di kotak 100 dan menyelesaikan misi kosmik!";
+                document.getElementById("modal-badge").innerText = "Misi Selesai!";
+                
+                callbackSetelahModal = function() {
+                    posisiPion = 1;
+                    buatPapan();
+                    resetDaduKeSemula();
+                };
+
+                document.getElementById("custom-modal").classList.add("show");
+            }, 300);
         }
 
         function cekTanggaAtauTali(apakahBenar) {
@@ -712,7 +756,11 @@
                     callbackSetelahModal = function() {
                         gerakkanPionMeluncurSpesial(posisiPion, tujuanBaru, function() {
                             posisiPion = tujuanBaru;
-                            resetDaduKeSemula();
+                            if (posisiPion === totalKotak) {
+                                tampilkanPopupMenang();
+                            } else {
+                                resetDaduKeSemula();
+                            }
                         });
                     };
 
@@ -786,7 +834,6 @@
 
         function resetDaduKeSemula() {
             if (posisiPion >= totalKotak) {
-                alert("Selamat! Kamu berhasil mencapai garis finis di kotak 100! 🏆✨");
                 posisiPion = 1;
                 posisikanPionAbsolute(posisiPion);
             }
