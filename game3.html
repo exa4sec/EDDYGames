@@ -137,7 +137,7 @@
             font-size: 22px;
             position: absolute;
             z-index: 10;
-            transition: all 0.1s linear;
+            transition: all 0.5s ease;
         }
 
         .control-panel {
@@ -344,7 +344,6 @@
         <div class="board-wrapper">
             <div class="board" id="game-board"></div>
             <canvas id="game-canvas"></canvas>
-            <!-- Pion Roket Bergerak Halus -->
             <div id="pawn-element" class="pawn" style="display: none;">🚀</div>
         </div>
 
@@ -639,8 +638,9 @@
             document.getElementById("area-soal").style.display = "none";
 
             let targetPosisi = posisiPion;
+            let jawabanBenar = (jumlahPlanetDiKotak === kunciJawaban);
 
-            if (jumlahPlanetDiKotak === kunciJawaban) {
+            if (jawabanBenar) {
                 document.getElementById("modal-title").innerText = "BENAR! 🎉";
                 document.getElementById("modal-title").style.color = "#2ed573";
                 document.getElementById("modal-desc").innerText = `Hebat sekali! Jawaban ${kunciJawaban} pas. Roket meluncur maju!`;
@@ -651,13 +651,13 @@
                 callbackSetelahModal = function() {
                     gerakkanPionKotakKeKotak(posisiPion, targetPosisi, function() {
                         posisiPion = targetPosisi;
-                        cekTanggaAtauTali();
+                        cekTanggaAtauTali(true); // Status Benar: Bisa naik tangga atau turun tali
                     });
                 };
             } else {
                 document.getElementById("modal-title").innerText = "BELUM PAS! 📉";
                 document.getElementById("modal-title").style.color = "#ff4757";
-                document.getElementById("modal-desc").innerText = `Ups, jumlah planet (${jumlahPlanetDiKotak}) belum pas. Pion terpaksa mundur!`;
+                document.getElementById("modal-desc").innerText = `Ups, jumlah planet (${jumlahPlanetDiKotak}) belum pas. Pion mundur!`;
                 
                 targetPosisi = posisiPion - jumlahPlanetDiKotak;
                 if (targetPosisi < 1) targetPosisi = 1;
@@ -665,7 +665,7 @@
                 callbackSetelahModal = function() {
                     gerakkanPionKotakKeKotak(posisiPion, targetPosisi, function() {
                         posisiPion = targetPosisi;
-                        resetDaduKeSemula();
+                        cekTanggaAtauTali(false); // Status Salah: Tidak boleh naik tangga, tapi tetap bisa turun tali
                     });
                 };
             }
@@ -673,13 +673,19 @@
             document.getElementById("custom-modal").classList.add("show");
         }
 
-        // Cek apakah mendarat di Tangga atau Tali Tali
-        function cekTanggaAtauTali() {
+        // Cek Tangga atau Tali dengan Aturan Status Jawaban
+        function cekTanggaAtauTali(apakahBenar) {
             if (jalurGame[posisiPion]) {
                 let tujuanBaru = jalurGame[posisiPion];
                 let isLadder = tujuanBaru > posisiPion;
 
-                // Tampilkan Modal Spesial Tangga / Tali
+                // Jika jawaban SALAH dan posisinya adalah TANGGA (isLadder = true), abaikan tangga
+                if (!apakahBenar && isLadder) {
+                    resetDaduKeSemula();
+                    return;
+                }
+
+                // Jika jawaban BENAR atau posisinya adalah TALI (turun), jalankan event
                 setTimeout(() => {
                     const modalPlanetsContainer = document.getElementById("modal-planets-container");
                     modalPlanetsContainer.innerHTML = isLadder ? "🪜✨" : "🪢🎢";
@@ -718,7 +724,7 @@
             }
         }
 
-        // Animasi Kotak ke Kotak Biasa
+        // Animasi Kotak ke Kotak Diperlambat Jadi 1 Detik (1000ms) per Angka
         function gerakkanPionKotakKeKotak(dari, ke, callback) {
             let langkah = dari < ke ? 1 : -1;
             let current = dari;
@@ -731,10 +737,10 @@
                     clearInterval(interval);
                     if (callback) callback();
                 }
-            }, 300);
+            }, 1000); // 1 detik per perpindahan angka
         }
 
-        // Animasi Meluncur Spesial Melewati Tangga / Tali
+        // Animasi Meluncur Spesial Melewati Tangga / Tali Diperlambat
         function gerakkanPionMeluncurSpesial(dari, ke, callback) {
             const startEl = document.getElementById(`cell-${dari}`);
             const endEl = document.getElementById(`cell-${ke}`);
@@ -750,7 +756,7 @@
                 let endX = r2.left + r2.width / 2 - wRect.left - 12;
                 let endY = r2.top + r2.height / 2 - wRect.top - 14;
 
-                let steps = 30; // Semakin besar semakin halus/pelan
+                let steps = 50; // Lebih banyak langkah agar luncurannya makin halus & pelan
                 let currentStep = 0;
 
                 let glideInterval = setInterval(() => {
