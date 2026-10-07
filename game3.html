@@ -11,7 +11,7 @@
             padding: 0;
             -webkit-user-select: none;
             user-select: none;
-            -webkit-touch-callout: none; /* Mencegah pop-up menu HP saat disentuh lama */
+            -webkit-touch-callout: none;
         }
 
         body {
@@ -235,8 +235,9 @@
         .draggable-planet {
             font-size: 32px;
             cursor: grab;
-            touch-action: none; /* Mencegah scroll/menu bawaan HP saat digeser */
+            touch-action: none;
             user-select: none;
+            -webkit-user-drag: element; /* Mengizinkan drag mulus di browser TV/Mobile */
             transition: transform 0.1s;
         }
         .draggable-planet:active {
@@ -358,11 +359,9 @@
                 <p id="teks-soal" style="font-size: 16px; font-weight: bold; color: #ffd166; margin-bottom: 5px; text-shadow: 1px 1px 0 #000;"></p>
                 <p id="instruksi-soal" style="font-size: 12px; color: #dfe6e9;"></p>
                 
-                <!-- Kotak Jawaban -->
                 <div id="kotak-jawaban" class="planet-drop-area" ondragover="allowDrop(event)" ondrop="dropKeJawaban(event)"></div>
 
                 <p style="font-size: 12px; color: #ffd166; margin-top: 5px; font-weight: bold;">Kotak Cadangan Planet:</p>
-                <!-- Kotak Sumber Cadangan -->
                 <div id="kotak-sumber" class="planet-pool" ondragover="allowDrop(event)" ondrop="dropKeSumber(event)"></div>
 
                 <br>
@@ -402,6 +401,9 @@
             4: 14, 9: 31, 21: 42, 28: 84, 51: 67, 72: 91,
             17: 7, 54: 34, 62: 19, 87: 24, 95: 75, 99: 78
         };
+
+        // Mencegah menu konteks sistem TV muncul saat menekan lama / klik kanan
+        document.addEventListener('contextmenu', event => event.preventDefault());
 
         function buatPapan() {
             const board = document.getElementById("game-board");
@@ -602,6 +604,12 @@
             p.innerText = "🪐";
             p.draggable = true;
             p.id = idUnik;
+            
+            // Mencegah menu sistem TV terpanggil saat disentuh lama
+            p.addEventListener('touchstart', function(e) {
+                e.stopPropagation();
+            }, {passive: true});
+
             p.ondragstart = function(event) {
                 event.dataTransfer.setData("text", event.target.id);
             };
