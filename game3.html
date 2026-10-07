@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ular Tangga Matematika 100 Kotak</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: radial-gradient(circle at 50% 20%, #ff5400 0%, #3a0ca3 45%, #10002b 100%);
+            background-size: 200% 200%;
+            animation: galaxyShift 15s ease infinite alternate;
+            font-family: 'Comic Sans MS', 'Bubblegum Sans', 'Poppins', sans-serif;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+            align-items: center;
+        }
+
+        @keyframes galaxyShift {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 40px 70px, #ffd166, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 90px 40px, #ffffff, rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 250px 250px;
+            opacity: 0.6;
+            animation: twinkleStars 4s infinite linear;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        @keyframes twinkleStars {
+            0% { transform: translateY(0); opacity: 0.4; }
+            50% { opacity: 0.8; }
+            100% { transform: translateY(-50px); opacity: 0.4; }
+        }
+
+        .container {
+            max-width: 680px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 24px;
+            border: 4px solid #ffffff;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            z-index: 2;
+        }
+
+        header {
+            text-align: center;
+            background: linear-gradient(135deg, #ff0054, #ff5400, #ffbd00);
+            color: #fff;
+            padding: 15px;
+            border-radius: 20px;
+            border: 4px solid #ffffff;
+            box-shadow: 0 8px 0 #b3003b, 0 12px 20px rgba(0, 0, 0, 0.3);
+            margin-bottom: 15px;
+        }
+
+        header h1 {
+            font-size: 1.6rem;
+            text-shadow: 3px 3px 0px #000;
+        }
+
+        header .tagline {
+            font-size: 0.9rem;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        .board-wrapper {
+            position: relative;
+            margin: 15px 0;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 3px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px;
+            border-radius: 12px;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .cell {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            height: 48px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 11px;
+            border-radius: 6px;
+            position: relative;
+            border: 1px solid #b2bec3;
+        }
+        
+        .cell.tangga-start { background: #d4edda; border-color: #28a745; }
+        .cell.tali-start { background: #fdf2e9; border-color: #e67e22; }
+
+        canvas#game-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .pawn {
+            font-size: 22px;
+            position: absolute;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        .control-panel {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px;
+            border-radius: 16px;
+            margin-top: 15px;
+            border: 2px dashed #ffd166;
+            text-align: center;
+            position: relative;
+        }
+
+        .dice-container {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin: 15px 0;
+            perspective: 800px;
+        }
+        
+        .dice {
+            width: 60px;
+            height: 60px;
+            background: white;
+            color: #d63031;
+            border: 3px solid #d63031;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            box-shadow: 0 6px 0 #b2bec3, 0 8px 15px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 10;
+        }
+        
+        .dice.bouncing {
+            animation: bounceAllOver 0.4s infinite alternate ease-in-out;
+        }
+
+        @keyframes bounceAllOver {
+            0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+            25% { transform: translate(-100px, -140px) rotate(180deg) scale(1.2); }
+            50% { transform: translate(120px, -80px) rotate(360deg) scale(0.9); }
+            100% { transform: translate(80px, -120px) rotate(720deg) scale(1.25); }
+        }
+
+        .btn {
+            background-color: #00b894;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #00876c;
+            transition: all 0.1s ease-in-out;
+        }
+        .btn:hover { background-color: #01a381; }
+        .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #00876c; }
+
+        .planet-drop-area {
+            background: rgba(0, 0, 0, 0.5);
+            border: 3px dashed #00b894;
+            border-radius: 14px;
+            min-height: 80px;
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            margin: 8px 0;
+        }
+
+        .planet-pool {
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid #ffd166;
+            border-radius: 14px;
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            margin-top: 5px;
+            min-height: 70px;
+        }
+
+        .draggable-planet {
+            font-size: 30px;
+            cursor: grab;
+            user-select: none;
+            transition: transform 0.1s;
+        }
+        .draggable-planet:active {
+            cursor: grabbing;
+            transform: scale(1.2);
+        }
+
+        /* STYLING CUSTOM POPUP / MODAL Keren */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-box {
+            background: linear-gradient(135deg, #2b1055, #757ecb);
+            border: 4px solid #ffd166;
+            border-radius: 24px;
+            padding: 25px;
+            width: 90%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.6);
+            transform: scale(0.7);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .modal-overlay.show .modal-box {
+            transform: scale(1);
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 0px #000;
+        }
+
+        .modal-text {
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+            color: #f1f2f6;
+        }
+
+        .modal-planets-display {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 12px;
+            margin: 15px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            min-height: 60px;
+            align-items: center;
+            border: 2px dashed rgba(255,255,255,0.3);
+        }
+
+        .modal-planets-display span {
+            font-size: 28px;
+            animation: popIn 0.3s ease;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+
+        .modal-count-badge {
+            font-size: 1.2rem;
+            color: #ffd166;
+            font-weight: bold;
+            margin-top: 5px;
+            text-shadow: 1px 1px 0 #000;
+        }
+
+        footer {
+            text-align: center;
+            color: #ffd166;
+            font-size: 0.85rem;
+            margin-top: 15px;
+            text-shadow: 1px 1px 0px #000;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>🪐 Misi Planet & Tali Tangga 🚀</h1>
+            <p class="tagline">Belajar Berhitung Seru untuk Anak-Anak!</p>
+        </header>
+
+        <div class="board-wrapper">
+            <div class="board" id="game-board"></div>
+            <canvas id="game-canvas"></canvas>
+        </div>
+
+        <div class="control-panel">
+            <div id="area-dadu">
+                <div class="dice-container">
+                    <div id="dadu1" class="dice">🎲</div>
+                    <div id="dadu2" class="dice">🎲</div>
+                </div>
+                <button class="btn" id="btn-kocok" onclick="mulaiKocokDadu()">Kocok Dadu 🎲</button>
+            </div>
+
+            <div id="area-soal" style="display: none; margin-top: 5px;">
+                <p id="teks-soal" style="font-size: 16px; font-weight: bold; color: #ffd166; margin-bottom: 5px; text-shadow: 1px 1px 0 #000;"></p>
+                <p id="instruksi-soal" style="font-size: 12px; color: #dfe6e9;"></p>
+                
+                <div id="kotak-jawaban" class="planet-drop-area" ondragover="allowDrop(event)" ondrop="dropKeJawaban(event)"></div>
+
+                <p style="font-size: 12px; color: #ffd166; margin-top: 5px; font-weight: bold;">Kotak Cadangan Planet:</p>
+                <div id="kotak-sumber" class="planet-pool" ondragover="allowDrop(event)" ondrop="dropKeSumber(event)"></div>
+
+                <br>
+                <button class="btn" onclick="cekJawabanPlanet()" style="margin-top: 5px;">Selesai & Jalankan Roket! 🚀</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUSTOM MODAL POPUP -->
+    <div id="custom-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h2 id="modal-title" class="modal-title">HASIL</h2>
+            <p id="modal-desc" class="modal-text">Pesan hasil di sini...</p>
+            
+            <div class="modal-planets-display" id="modal-planets-container">
+                <!-- Planet hasil hitungan akan muncul di sini -->
+            </div>
+            <div id="modal-badge" class="modal-count-badge">Total: 0 Planet</div>
+
+            <br>
+            <button class="btn" id="modal-btn-action" onclick="tutupModalDanLanjutkan()">Lanjutkan Perjalanan 🚀</button>
+        </div>
+    </div>
+
+    <footer>
+        <p>Dibuat dengan semangat belajar & coding bareng! ✨</p>
+    </footer>
+
+    <script>
+        let posisiPion = 1;
+        const totalKotak = 100;
+        let angka1 = 0;
+        let angka2 = 0;
+        let operator = "+";
+        let kunciJawaban = 0;
+        let callbackSetelahModal = null;
+
+        const jalurGame = {
+            4: 14, 9: 31, 21: 42, 28: 84, 51: 67, 72: 91,
+            17: 7, 54: 34, 62: 19, 87: 24, 95: 75, 99: 78
+        };
+
+        function buatPapan() {
+            const board = document.getElementById("game-board");
+            board.innerHTML = "";
+            
+            for (let row = 9; row >= 0; row--) {
+                let rowCells = [];
+                for (let col = 0; col < 10; col++) {
+                    let cellNum = (row % 2 === 0) ? (row * 10) + col + 1 : (row * 10) + (10 - col);
+                    rowCells.push(cellNum);
+                }
+
+                rowCells.forEach(i => {
+                    const cell = document.createElement("div");
+                    cell.classList.add("cell");
+                    cell.id = `cell-${i}`;
+                    
+                    let labelInfo = i;
+                    if (jalurGame[i]) {
+                        if (jalurGame[i] > i) {
+                            cell.classList.add("tangga-start");
+                            labelInfo += `<span style="font-size:9px; color:#28a745; font-weight:bold;">🪜</span>`;
+                        } else {
+                            cell.classList.add("tali-start");
+                            labelInfo += `<span style="font-size:9px; color:#e67e22; font-weight:bold;">🪢</span>`;
+                        }
+                    }
+                    cell.innerHTML = labelInfo;
+
+                    if (i === posisiPion) {
+                        const pawn = document.createElement("div");
+                        pawn.classList.add("pawn");
+                        pawn.innerText = "🚀";
+                        cell.appendChild(pawn);
+                    }
+
+                    board.appendChild(cell);
+                });
+            }
+
+            setTimeout(gambarTaliDanTanggaCanvas, 50);
+        }
+
+        function gambarTaliDanTanggaCanvas() {
+            const canvas = document.getElementById("game-canvas");
+            const board = document.getElementById("game-board");
+            const wrapper = document.querySelector(".board-wrapper");
+
+            canvas.width = wrapper.clientWidth;
+            canvas.height = board.clientHeight;
+            const ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let start in jalurGame) {
+                let end = jalurGame[start];
+                let startEl = document.getElementById(`cell-${start}`);
+                let endEl = document.getElementById(`cell-${end}`);
+
+                if (startEl && endEl) {
+                    let r1 = startEl.getBoundingClientRect();
+                    let r2 = endEl.getBoundingClientRect();
+                    let wRect = wrapper.getBoundingClientRect();
+
+                    let x1 = r1.left + r1.width / 2 - wRect.left;
+                    let y1 = r1.top + r1.height / 2 - wRect.top;
+                    let x2 = r2.left + r2.width / 2 - wRect.left;
+                    let y2 = r2.top + r2.height / 2 - wRect.top;
+
+                    let isLadder = end > start;
+
+                    if (!isLadder) {
+                        let cp1x = x1 + (x2 - x1) * 0.25 + 70;
+                        let cp1y = y1 + (y2 - y1) * 0.25 - 50;
+                        let cp2x = x1 + (x2 - x1) * 0.75 - 70;
+                        let cp2y = y1 + (y2 - y1) * 0.75 + 50;
+
+                        ctx.beginPath();
+                        ctx.moveTo(x1, y1);
+                        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x2, y2);
+                        ctx.strokeStyle = "#d35400";
+                        ctx.lineWidth = 6;
+                        ctx.lineCap = "round";
+                        ctx.stroke();
+
+                        ctx.beginPath();
+                        ctx.moveTo(x1, y1);
+                        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x2, y2);
+                        ctx.strokeStyle = "#78281f";
+                        ctx.lineWidth = 2;
+                        ctx.setLineDash([4, 4]);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+
+                        ctx.beginPath();
+                        ctx.arc(x1, y1, 6, 0, Math.PI * 2);
+                        ctx.fillStyle = "#f39c12";
+                        ctx.fill();
+                        ctx.lineWidth = 1.5;
+                        ctx.strokeStyle = "#fff";
+                        ctx.stroke();
+                    } else {
+                        let angle = Math.atan2(y2 - y1, x2 - x1);
+                        let perpX = Math.cos(angle + Math.PI / 2) * 6;
+                        let perpY = Math.sin(angle + Math.PI / 2) * 6;
+
+                        ctx.strokeStyle = "#8e44ad";
+                        ctx.lineWidth = 3;
+
+                        ctx.beginPath();
+                        ctx.moveTo(x1 + perpX, y1 + perpY);
+                        ctx.lineTo(x2 + perpX, y2 + perpY);
+                        ctx.stroke();
+
+                        ctx.beginPath();
+                        ctx.moveTo(x1 - perpX, y1 - perpY);
+                        ctx.lineTo(x2 - perpX, y2 - perpY);
+                        ctx.stroke();
+
+                        let stepsCount = Math.floor(Math.hypot(x2 - x1, y2 - y1) / 16);
+                        for (let s = 1; s < stepsCount; s++) {
+                            let t = s / stepsCount;
+                            let curX = x1 + (x2 - x1) * t;
+                            let curY = y1 + (y2 - y1) * t;
+
+                            ctx.beginPath();
+                            ctx.moveTo(curX + perpX, curY + perpY);
+                            ctx.lineTo(curX - perpX, curY - perpY);
+                            ctx.strokeStyle = "#27ae60";
+                            ctx.lineWidth = 2;
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+        }
+
+        function mulaiKocokDadu() {
+            const btnKocok = document.getElementById("btn-kocok");
+            btnKocok.disabled = true;
+            btnKocok.innerText = "Dadu Melesat... 🎲";
+
+            const elDadu1 = document.getElementById("dadu1");
+            const elDadu2 = document.getElementById("dadu2");
+            
+            elDadu1.innerText = "🎲";
+            elDadu2.innerText = "🎲";
+            elDadu1.classList.add("bouncing");
+            elDadu2.classList.add("bouncing");
+
+            setTimeout(() => {
+                elDadu1.classList.remove("bouncing");
+                elDadu2.classList.remove("bouncing");
+                selesaiKocokDadu();
+            }, 1800);
+        }
+
+        function selesaiKocokDadu() {
+            angka1 = Math.floor(Math.random() * 9) + 1;
+            angka2 = Math.floor(Math.random() * 9) + 1;
+
+            const operatorList = ["+", "-"];
+            operator = operatorList[Math.floor(Math.random() * operatorList.length)];
+
+            if (operator === "-" && angka1 < angka2) {
+                let temp = angka1;
+                angka1 = angka2;
+                angka2 = temp;
+            }
+
+            kunciJawaban = (operator === "+") ? (angka1 + angka2) : (angka1 - angka2);
+
+            document.getElementById("dadu1").innerText = angka1;
+            document.getElementById("dadu2").innerText = angka2;
+
+            const btnKocok = document.getElementById("btn-kocok");
+            btnKocok.disabled = false;
+            btnKocok.innerText = "Kocok Dadu 🎲";
+
+            document.getElementById("teks-soal").innerText = `Misi Planet: ${angka1} ${operator} ${angka2} = ?`;
+            
+            if (operator === "+") {
+                document.getElementById("instruksi-soal").innerText = "Seret planet dari bawah ke kotak jawaban untuk menjumlahkan!";
+            } else {
+                document.getElementById("instruksi-soal").innerText = "Seret planet keluar dari kotak jawaban untuk mengurangi!";
+            }
+
+            setupAreaPlanetDuaKotak();
+
+            document.getElementById("area-dadu").style.display = "none";
+            document.getElementById("area-soal").style.display = "block";
+        }
+
+        function setupAreaPlanetDuaKotak() {
+            const kotakJawab = document.getElementById("kotak-jawaban");
+            const kotakSumber = document.getElementById("kotak-sumber");
+            
+            kotakJawab.innerHTML = "";
+            kotakSumber.innerHTML = "";
+
+            for (let i = 0; i < angka1; i++) {
+                tambahPlanetKeElemen(kotakJawab, "planet-jawab-" + i);
+            }
+
+            for (let i = 0; i < 9; i++) {
+                tambahPlanetKeElemen(kotakSumber, "planet-sumber-" + i);
+            }
+        }
+
+        function tambahPlanetKeElemen(targetContainer, idUnik) {
+            let p = document.createElement("div");
+            p.className = "draggable-planet";
+            p.innerText = "🪐";
+            p.draggable = true;
+            p.id = idUnik;
+            p.ondragstart = function(event) {
+                event.dataTransfer.setData("text", event.target.id);
+            };
+            targetContainer.appendChild(p);
+        }
+
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function dropKeJawaban(ev) {
+            ev.preventDefault();
+            let dataId = ev.dataTransfer.getData("text");
+            let el = document.getElementById(dataId);
+            if (el) {
+                document.getElementById("kotak-jawaban").appendChild(el);
+            }
+        }
+
+        function dropKeSumber(ev) {
+            ev.preventDefault();
+            let dataId = ev.dataTransfer.getData("text");
+            let el = document.getElementById(dataId);
+            if (el) {
+                document.getElementById("kotak-sumber").appendChild(el);
+            }
+        }
+
+        function cekJawabanPlanet() {
+            const kotakJawab = document.getElementById("kotak-jawaban");
+            const jumlahPlanetDiKotak = kotakJawab.children.length;
+            
+            // Siapkan visual planet untuk ditampilkan di dalam Modal Pop-up
+            const modalPlanetsContainer = document.getElementById("modal-planets-container");
+            modalPlanetsContainer.innerHTML = "";
+            for (let i = 0; i < jumlahPlanetDiKotak; i++) {
+                let planetSpan = document.createElement("span");
+                planetSpan.innerText = "🪐";
+                modalPlanetsContainer.appendChild(planetSpan);
+            }
+
+            document.getElementById("modal-badge").innerText = `Total di Kotak: ${jumlahPlanetDiKotak} Planet`;
+            document.getElementById("area-soal").style.display = "none";
+
+            let targetPosisi = posisiPion;
+
+            if (jumlahPlanetDiKotak === kunciJawaban) {
+                document.getElementById("modal-title").innerText = "BENAR! 🎉";
+                document.getElementById("modal-title").style.color = "#2ed573";
+                document.getElementById("modal-desc").innerText = `Hebat sekali! Jawaban ${kunciJawaban} pas. Roket meluncur maju!`;
+                
+                targetPosisi = posisiPion + kunciJawaban;
+                if (targetPosisi > totalKotak) targetPosisi = totalKotak;
+
+                callbackSetelahModal = function() {
+                    gerakkanPionSecaraAnimasi(posisiPion, targetPosisi, function() {
+                        posisiPion = targetPosisi;
+                        if (jalurGame[posisiPion]) {
+                            let tujuanBaru = jalurGame[posisiPion];
+                            setTimeout(() => {
+                                if (tujuanBaru > posisiPion) {
+                                    alert(`Hore! Naik tangga meluncur ke kotak ${tujuanBaru}! 🪜✨`);
+                                } else {
+                                    alert(`Waduh! Meluncur turun lewat tali tambang ke kotak ${tujuanBaru}! 🪢🎢`);
+                                }
+                                posisiPion = tujuanBaru;
+                                buatPapan();
+                                resetDaduKeSemula();
+                            }, 400);
+                        } else {
+                            resetDaduKeSemula();
+                        }
+                    });
+                };
+            } else {
+                document.getElementById("modal-title").innerText = "BELUM PAS! 📉";
+                document.getElementById("modal-title").style.color = "#ff4757";
+                document.getElementById("modal-desc").innerText = `Ups, jumlah planet (${jumlahPlanetDiKotak}) belum pas. Pion terpaksa mundur!`;
+                
+                targetPosisi = posisiPion - jumlahPlanetDiKotak;
+                if (targetPosisi < 1) targetPosisi = 1;
+
+                callbackSetelahModal = function() {
+                    gerakkanPionSecaraAnimasi(posisiPion, targetPosisi, function() {
+                        posisiPion = targetPosisi;
+                        buatPapan();
+                        resetDaduKeSemula();
+                    });
+                };
+            }
+
+            // Tampilkan Modal Custom Pop-up
+            document.getElementById("custom-modal").classList.add("show");
+        }
+
+        function tutupModalDanLanjutkan() {
+            // Sembunyikan Modal
+            document.getElementById("custom-modal").classList.remove("show");
+            
+            // Jalankan callback aksi berikutnya (gerak pion)
+            if (callbackSetelahModal) {
+                callbackSetelahModal();
+                callbackSetelahModal = null;
+            }
+        }
+
+        function gerakkanPionSecaraAnimasi(dari, ke, callback) {
+            let langkah = dari < ke ? 1 : -1;
+            let current = dari;
+
+            let interval = setInterval(() => {
+                if (current !== ke) {
+                    current += langkah;
+                    posisiPion = current;
+                    buatPapan();
+                } else {
+                    clearInterval(interval);
+                    if (callback) callback();
+                }
+            }, 800);
+        }
+
+        function resetDaduKeSemula() {
+            if (posisiPion >= totalKotak) {
+                alert("Selamat! Kamu berhasil mencapai garis finis di kotak 100! 🏆✨");
+                posisiPion = 1;
+            }
+            buatPapan();
+            document.getElementById("dadu1").innerText = "🎲";
+            document.getElementById("dadu2").innerText = "🎲";
+            document.getElementById("area-dadu").style.display = "block";
+            document.getElementById("area-soal").style.display = "none";
+        }
+
+        window.onload = buatPapan;
+    </script>
+</body>
+</html>
