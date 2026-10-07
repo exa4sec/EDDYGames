@@ -9,6 +9,9 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none; /* Mencegah pop-up menu HP saat disentuh lama */
         }
 
         body {
@@ -230,8 +233,9 @@
         }
 
         .draggable-planet {
-            font-size: 30px;
+            font-size: 32px;
             cursor: grab;
+            touch-action: none; /* Mencegah scroll/menu bawaan HP saat digeser */
             user-select: none;
             transition: transform 0.1s;
         }
@@ -308,12 +312,6 @@
 
         .modal-planets-display span {
             font-size: 28px;
-            animation: popIn 0.3s ease;
-        }
-
-        @keyframes popIn {
-            0% { transform: scale(0); }
-            100% { transform: scale(1); }
         }
 
         .modal-count-badge {
@@ -360,9 +358,11 @@
                 <p id="teks-soal" style="font-size: 16px; font-weight: bold; color: #ffd166; margin-bottom: 5px; text-shadow: 1px 1px 0 #000;"></p>
                 <p id="instruksi-soal" style="font-size: 12px; color: #dfe6e9;"></p>
                 
+                <!-- Kotak Jawaban -->
                 <div id="kotak-jawaban" class="planet-drop-area" ondragover="allowDrop(event)" ondrop="dropKeJawaban(event)"></div>
 
                 <p style="font-size: 12px; color: #ffd166; margin-top: 5px; font-weight: bold;">Kotak Cadangan Planet:</p>
+                <!-- Kotak Sumber Cadangan -->
                 <div id="kotak-sumber" class="planet-pool" ondragover="allowDrop(event)" ondrop="dropKeSumber(event)"></div>
 
                 <br>
@@ -574,13 +574,13 @@
                 document.getElementById("instruksi-soal").innerText = "Seret planet keluar dari kotak jawaban untuk mengurangi!";
             }
 
-            setupAreaPlanetDuaKotak();
+            setupAreaPlanetDrag();
 
             document.getElementById("area-dadu").style.display = "none";
             document.getElementById("area-soal").style.display = "block";
         }
 
-        function setupAreaPlanetDuaKotak() {
+        function setupAreaPlanetDrag() {
             const kotakJawab = document.getElementById("kotak-jawaban");
             const kotakSumber = document.getElementById("kotak-sumber");
             
@@ -609,12 +609,14 @@
         }
 
         function allowDrop(ev) { ev.preventDefault(); }
+        
         function dropKeJawaban(ev) {
             ev.preventDefault();
             let dataId = ev.dataTransfer.getData("text");
             let el = document.getElementById(dataId);
             if (el) document.getElementById("kotak-jawaban").appendChild(el);
         }
+
         function dropKeSumber(ev) {
             ev.preventDefault();
             let dataId = ev.dataTransfer.getData("text");
@@ -651,7 +653,7 @@
                 callbackSetelahModal = function() {
                     gerakkanPionKotakKeKotak(posisiPion, targetPosisi, function() {
                         posisiPion = targetPosisi;
-                        cekTanggaAtauTali(true); // Status Benar: Bisa naik tangga atau turun tali
+                        cekTanggaAtauTali(true);
                     });
                 };
             } else {
@@ -665,7 +667,7 @@
                 callbackSetelahModal = function() {
                     gerakkanPionKotakKeKotak(posisiPion, targetPosisi, function() {
                         posisiPion = targetPosisi;
-                        cekTanggaAtauTali(false); // Status Salah: Tidak boleh naik tangga, tapi tetap bisa turun tali
+                        cekTanggaAtauTali(false);
                     });
                 };
             }
@@ -673,19 +675,16 @@
             document.getElementById("custom-modal").classList.add("show");
         }
 
-        // Cek Tangga atau Tali dengan Aturan Status Jawaban
         function cekTanggaAtauTali(apakahBenar) {
             if (jalurGame[posisiPion]) {
                 let tujuanBaru = jalurGame[posisiPion];
                 let isLadder = tujuanBaru > posisiPion;
 
-                // Jika jawaban SALAH dan posisinya adalah TANGGA (isLadder = true), abaikan tangga
                 if (!apakahBenar && isLadder) {
                     resetDaduKeSemula();
                     return;
                 }
 
-                // Jika jawaban BENAR atau posisinya adalah TALI (turun), jalankan event
                 setTimeout(() => {
                     const modalPlanetsContainer = document.getElementById("modal-planets-container");
                     modalPlanetsContainer.innerHTML = isLadder ? "🪜✨" : "🪢🎢";
@@ -724,7 +723,6 @@
             }
         }
 
-        // Animasi Kotak ke Kotak Diperlambat Jadi 1 Detik (1000ms) per Angka
         function gerakkanPionKotakKeKotak(dari, ke, callback) {
             let langkah = dari < ke ? 1 : -1;
             let current = dari;
@@ -737,10 +735,9 @@
                     clearInterval(interval);
                     if (callback) callback();
                 }
-            }, 1000); // 1 detik per perpindahan angka
+            }, 1000);
         }
 
-        // Animasi Meluncur Spesial Melewati Tangga / Tali Diperlambat
         function gerakkanPionMeluncurSpesial(dari, ke, callback) {
             const startEl = document.getElementById(`cell-${dari}`);
             const endEl = document.getElementById(`cell-${ke}`);
@@ -756,7 +753,7 @@
                 let endX = r2.left + r2.width / 2 - wRect.left - 12;
                 let endY = r2.top + r2.height / 2 - wRect.top - 14;
 
-                let steps = 50; // Lebih banyak langkah agar luncurannya makin halus & pelan
+                let steps = 50;
                 let currentStep = 0;
 
                 let glideInterval = setInterval(() => {
