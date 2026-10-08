@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misi Galaksi 10 Planet: Hujan Bintang & Perayaan 🚀</title>
+    <style>
+        /* ==========================================
+           TEMA ANGKASA: ORANYE MATAHARI & UNGU GALAKSI
+           ========================================== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: radial-gradient(circle at 50% 20%, #ff5400 0%, #3a0ca3 45%, #10002b 100%);
+            background-size: 200% 200%;
+            animation: galaxyShift 15s ease infinite alternate;
+            font-family: 'Comic Sans MS', 'Bubblegum Sans', 'Poppins', sans-serif;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        @keyframes galaxyShift {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        body::before {
+            content: '';
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: radial-gradient(2px 2px at 20px 30px, #ffffff, rgba(0,0,0,0)),
+                              radial-gradient(2px 2px at 40px 70px, #ffd166, rgba(0,0,0,0)),
+                              radial-gradient(1px 1px at 90px 40px, #ffffff, rgba(0,0,0,0)),
+                              radial-gradient(2px 2px at 150px 120px, #ffb703, rgba(0,0,0,0)),
+                              radial-gradient(3px 3px at 200px 200px, #ffffff, rgba(0,0,0,0));
+            background-repeat: repeat; background-size: 250px 250px;
+            opacity: 0.6; animation: twinkleStars 4s infinite linear;
+            z-index: -1; pointer-events: none;
+        }
+
+        body::after {
+            content: '🪐'; position: fixed; bottom: -20px; right: -20px;
+            font-size: 9rem; opacity: 0.2; z-index: -1;
+            animation: floatPlanet 8s ease-in-out infinite alternate;
+            pointer-events: none;
+        }
+
+        header {
+            text-align: center;
+            background: linear-gradient(135deg, #ff0054, #ff5400, #ffbd00);
+            color: #fff; padding: 15px 20px;
+            border-radius: 20px; border: 4px solid #ffffff;
+            box-shadow: 0 8px 0 #b3003b, 0 12px 20px rgba(0, 0, 0, 0.3);
+            margin-bottom: 15px; width: 100%; max-width: 500px;
+        }
+
+        header h1 { font-size: 1.8rem; text-shadow: 2px 2px 0px #000; }
+
+        .info-banner {
+            background-color: #ff9f1c; color: #1d3557; padding: 8px 15px;
+            border-radius: 10px; border: 2px dashed #fff; text-align: center;
+            font-size: 1.1rem; font-weight: bold; margin-bottom: 15px;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.15); width: 100%; max-width: 500px;
+        }
+
+        .game-board-container {
+            background: rgba(16, 0, 43, 0.85); border: 4px solid #4cc9f0;
+            border-radius: 16px; padding: 8px;
+            box-shadow: 0 6px 0 #3a86ff, 0 12px 20px rgba(0,0,0,0.4);
+            margin-bottom: 10px; cursor: none;
+            position: relative;
+        }
+
+        canvas { display: block; background: radial-gradient(circle at center, #1b1b3a 0%, #050510 100%); border-radius: 10px; max-width: 100%; }
+
+        .score-board { font-size: 1.1rem; font-weight: bold; color: #ffd166; text-shadow: 2px 2px 0px #000; margin-bottom: 15px; }
+
+        /* KOTAK POPUP PERAYAAN */
+        #popupModal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: linear-gradient(135deg, #ff0054, #7209b7);
+            border: 5px solid #ffde59;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            width: 85%;
+            max-width: 380px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.6);
+            z-index: 100;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: none;
+        }
+
+        #popupModal.show {
+            display: block;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        #popupModal h2 {
+            font-size: 1.5rem;
+            color: #ffde59;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .popup-letter {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #fff;
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            margin: 10px 0;
+            text-shadow: 3px 3px 0 #ff0054;
+        }
+
+        #popupModal p {
+            font-size: 0.95rem;
+            line-height: 1.4;
+            margin-bottom: 10px;
+            color: #f1f1f1;
+        }
+
+        .timer-badge {
+            font-size: 1.1rem;
+            background: #ff5400;
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: bold;
+            border: 2px solid #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🚀 Misi Galaksi 10 Planet 🌌</h1>
+    </header>
+
+    <div class="info-banner">
+        Cari dan tembak 3 planet yang membawa: <span id="targetLabel" style="color: #d32f2f; font-size: 1.4rem; font-weight: bold; background: #fff; padding: 2px 6px; border-radius: 6px;">?</span>
+    </div>
+    
+    <div class="game-board-container">
+        <canvas id="spaceCanvas" width="450" height="380"></canvas>
+
+        <!-- KOTAK POPUP PERAYAAN 10 DETIK -->
+        <div id="popupModal">
+            <h2>🎉 KEREN BANGET! 🎉</h2>
+            <div id="popupKarakter" class="popup-letter">A</div>
+            <p>Yuk teriakkan huruf/angka ini <b>5 kali</b>,<br>lalu teriak <b>HOREEE!</b> bersama-sama!</p>
+            <div class="timer-badge">Waktu: <span id="timerCount">10</span> detik</div>
+        </div>
+    </div>
+    
+    <div class="score-board">Target Terkumpul: <span id="score">0</span> / 3</div>
+
+    <script>
+        const canvas = document.getElementById("spaceCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // --- 1. WEB AUDIO API (EFEK SUARA SINTETIS) ---
+        let audioCtx = null;
+
+        function inisialisasiAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function mainkanSuaraLaser() {
+            inisialisasiAudio();
+            if (!audioCtx) return;
+            let osc = audioCtx.createOscillator();
+            let gainNode = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.15);
+            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.15);
+        }
+
+        function mainkanSuaraLedakan() {
+            inisialisasiAudio();
+            if (!audioCtx) return;
+            let bufferSize = audioCtx.sampleRate * 0.4;
+            let buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            let output = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) { output[i] = Math.random() * 2 - 1; }
+            let whiteNoise = audioCtx.createBufferSource();
+            whiteNoise.buffer = buffer;
+            let filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(800, audioCtx.currentTime);
+            filter.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.4);
+            let gainNode = audioCtx.createGain();
+            gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+            whiteNoise.connect(filter); filter.connect(gainNode); gainNode.connect(audioCtx.destination);
+            whiteNoise.start(); whiteNoise.stop(audioCtx.currentTime + 0.4);
+        }
+
+        // --- 2. DATA BANK SOAL & VARIABEL GLOBAL ---
+        const bankSoal = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("");
+        let targetSaatIni = "";
+        let skorPutaran = 0;
+        const targetTotalPerPutaran = 3;
+        let statusGame = "MAIN"; // "MAIN", "PERAYAAN", "HUJAN_BINTANG"
+
+        let laserList = [];
+        let partikelList = [];
+        let bintangJatuhList = []; // Array untuk efek hujan bintang
+        const daftarEmoji = ["🌍", "🌕", "🪐", "☀️", "☄️", "⭐", "🌑"];
+        let objekAngkasa = [];
+
+        let mouseX = -100;
+        let mouseY = -100;
+
+        // --- 3. FUNGSI UTAMA GAME ---
+        function acakKarakterBaru() {
+            const indexAcak = Math.floor(Math.random() * bankSoal.length);
+            targetSaatIni = bankSoal[indexAcak];
+            document.getElementById("targetLabel").innerText = targetSaatIni;
+            skorPutaran = 0;
+            document.getElementById("score").innerText = skorPutaran;
+        }
+
+        function buatLedakan(x, y, warnaDasar) {
+            mainkanSuaraLedakan();
+            const jumlahPartikel = 18;
+            const warnaList = [warnaDasar, '#ffffff', '#f44336', '#03a9f4'];
+            for (let i = 0; i < jumlahPartikel; i++) {
+                partikelList.push({
+                    x: x, y: y,
+                    radius: Math.random() * 3.5 + 2,
+                    kecepatanX: (Math.random() - 0.5) * 5,
+                    kecepatanY: (Math.random() - 0.5) * 5,
+                    warna: warnaList[Math.floor(Math.random() * warnaList.length)],
+                    hidup: 45, alfa: 1.0
+                });
+            }
+        }
+
+        function inisialisasiLevel() {
+            objekAngkasa = [];
+            skorPutaran = 0;
+            laserList = [];
+            partikelList = [];
+            bintangJatuhList = [];
+            statusGame = "MAIN";
+            acakKarakterBaru();
+
+            let indeksTarget = [];
+            while(indeksTarget.length < 3) {
+                let randIdx = Math.floor(Math.random() * 10);
+                if(!indeksTarget.includes(randIdx)) { indeksTarget.push(randIdx); }
+            }
+
+            for (let i = 0; i < 10; i++) {
+                let isTarget = indeksTarget.includes(i);
+                objekAngkasa.push({
+                    x: Math.random() * (canvas.width - 100) + 50,
+                    y: Math.random() * (canvas.height - 100) + 50,
+                    kecepatanX: (Math.random() - 0.5) * 1.5,
+                    kecepatanY: (Math.random() - 0.5) * 1.5,
+                    ukuranEmoji: Math.random() * 12 + 28,
+                    emoji: daftarEmoji[Math.floor(Math.random() * daftarEmoji.length)],
+                    sudutRotasi: Math.random() * Math.PI * 2,
+                    kecepatanRotasi: (Math.random() - 0.5) * 0.04,
+                    karakter: isTarget ? targetSaatIni : null,
+                    adalahTarget: isTarget,
+                    warnaLedakan: isTarget ? "#ffc107" : "#9e9e9e",
+                    warnaKarakter: "#ffff00",
+                    ditemukan: false
+                });
+            }
+        }
+
+        // --- FUNGSI SESI PERAYAAN (10 DETIK) ---
+        function mulaiSesiPerayaan() {
+            statusGame = "PERAYAAN";
+            document.getElementById("popupKarakter").innerText = targetSaatIni;
+            
+            const modal = document.getElementById("popupModal");
+            const timerSpan = document.getElementById("timerCount");
+            modal.classList.add("show");
+
+            let sisaWaktu = 10; // 10 detik sesuai permintaan
+            timerSpan.innerText = sisaWaktu;
+
+            let hitungMundur = setInterval(() => {
+                sisaWaktu--;
+                timerSpan.innerText = sisaWaktu;
+
+                if (sisaWaktu <= 0) {
+                    clearInterval(hitungMundur);
+                    modal.classList.remove("show"); // Tutup popup
+                    
+                    // LEDAKKAN SEMUA SISA PLANET DI LAYAR SECARA BERSAMAAN!
+                    objekAngkasa.forEach(obj => {
+                        if (!obj.ditemukan) {
+                            obj.ditemukan = true;
+                            buatLedakan(obj.x, obj.y, obj.warnaLedakan);
+                        }
+                    });
+
+                    // LANJUT KE EFEK HUJAN BINTANG
+                    mulaiHujanBintang();
+                }
+            }, 1000);
+        }
+
+        // --- FUNGSI HUJAN BINTANG JATUH ---
+        function mulaiHujanBintang() {
+            statusGame = "HUJAN_BINTANG";
+            bintangJatuhList = [];
+
+            // Buat banyak bintang memenuhi lebar layar dari atas
+            for (let i = 0; i < 40; i++) {
+                bintangJatuhList.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * -200 - 20, // Muncul bergelombang dari atas layar
+                    kecepatanY: Math.random() * 3 + 3, // Kecepatan jatuh
+                    radius: Math.random() * 4 + 2,
+                    warna: ['#ffde59', '#00ffff', '#ff5400', '#ffffff'][Math.floor(Math.random() * 4)]
+                });
+            }
+        }
+
+        let latarBelakangBintang = [];
+        for (let i = 0; i < 50; i++) {
+            latarBelakangBintang.push({
+                x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+                radius: Math.random() * 1.5 + 0.5, blur: Math.random() * 2,
+                alpha: Math.random() * 0.5 + 0.2, kecepatan: Math.random() * 0.1 + 0.02
+            });
+        }
+
+        // --- 4. LOOP ANIMASI UTAMA ---
+        function updateDanGambar() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            latarBelakangBintang.forEach(b => {
+                ctx.save(); ctx.shadowBlur = b.blur * 2; ctx.shadowColor = "#ffffff";
+                ctx.fillStyle = `rgba(255, 255, 255, ${b.alpha})`;
+                ctx.beginPath(); ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+                ctx.fill(); ctx.restore();
+                b.y += b.kecepatan; if (b.y > canvas.height) b.y = 0;
+            });
+
+            // Gambar Laser
+            for (let i = laserList.length - 1; i >= 0; i--) {
+                let laser = laserList[i]; ctx.save();
+                ctx.strokeStyle = "#00ffff"; ctx.lineWidth = 3;
+                ctx.shadowBlur = 12; ctx.shadowColor = "#00ffff";
+                ctx.beginPath(); ctx.moveTo(canvas.width / 2, canvas.height);
+                ctx.lineTo(laser.targetX, laser.targetY); ctx.stroke();
+                ctx.restore(); laser.life--; if (laser.life <= 0) laserList.splice(i, 1);
+            }
+
+            // Update posisi planet HANYA SAAT STATUS "MAIN"
+            if (statusGame === "MAIN") {
+                for (let i = 0; i < objekAngkasa.length; i++) {
+                    let obj1 = objekAngkasa[i];
+                    if (obj1.ditemukan) continue;
+
+                    obj1.x += obj1.kecepatanX;
+                    obj1.y += obj1.kecepatanY;
+                    obj1.sudutRotasi += obj1.kecepatanRotasi;
+
+                    let radius1 = obj1.ukuranEmoji / 2;
+                    if (obj1.x - radius1 < 0) { obj1.x = radius1; obj1.kecepatanX *= -1; }
+                    if (obj1.x + radius1 > canvas.width) { obj1.x = canvas.width - radius1; obj1.kecepatanX *= -1; }
+                    if (obj1.y - radius1 < 0) { obj1.y = radius1; obj1.kecepatanY *= -1; }
+                    if (obj1.y + radius1 > canvas.height) { obj1.y = canvas.height - radius1; obj1.kecepatanY *= -1; }
+
+                    for (let j = i + 1; j < objekAngkasa.length; j++) {
+                        let obj2 = objekAngkasa[j];
+                        if (obj2.ditemukan) continue;
+
+                        let dx = obj2.x - obj1.x;
+                        let dy = obj2.y - obj1.y;
+                        let jarak = Math.sqrt(dx * dx + dy * dy);
+                        let radius2 = obj2.ukuranEmoji / 2;
+                        let jarakMin = radius1 + radius2;
+
+                        if (jarak < jarakMin) {
+                            let tempX = obj1.kecepatanX;
+                            let tempY = obj1.kecepatanY;
+                            obj1.kecepatanX = obj2.kecepatanX;
+                            obj1.kecepatanY = obj2.kecepatanY;
+                            obj2.kecepatanX = tempX;
+                            obj2.kecepatanY = tempY;
+
+                            let overlap = jarakMin - jarak;
+                            let angle = Math.atan2(dy, dx);
+                            obj1.x -= Math.cos(angle) * overlap * 0.5;
+                            obj1.y -= Math.sin(angle) * overlap * 0.5;
+                            obj2.x += Math.cos(angle) * overlap * 0.5;
+                            obj2.y += Math.sin(angle) * overlap * 0.5;
+                        }
+                    }
+                }
+            }
+
+            // Render Planet
+            objekAngkasa.forEach(obj => {
+                if (!obj.ditemukan) {
+                    ctx.save(); 
+                    ctx.translate(obj.x, obj.y); 
+                    ctx.rotate(obj.sudutRotasi);
+
+                    ctx.font = `${obj.ukuranEmoji}px serif`;
+                    ctx.textAlign = "center"; 
+                    ctx.textBaseline = "middle";
+                    ctx.fillText(obj.emoji, 0, 0);
+
+                    if (obj.adalahTarget && obj.karakter) {
+                        ctx.fillStyle = obj.warnaKarakter;
+                        ctx.font = "bold 24px 'Comic Sans MS'";
+                        ctx.shadowColor = "#000"; 
+                        ctx.shadowBlur = 6;
+                        ctx.fillText(obj.karakter, 0, 0); 
+                    }
+                    
+                    ctx.restore();
+                }
+            });
+
+            // LOGIKA & RENDER HUJAN BINTANG JATUH
+            if (statusGame === "HUJAN_BINTANG") {
+                let semuaSampaiBawah = true;
+
+                bintangJatuhList.forEach(b => {
+                    b.y += b.kecepatanY;
+
+                    // Gambar Bintang Jatuh
+                    ctx.save();
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = b.warna;
+                    ctx.fillStyle = b.warna;
+                    ctx.beginPath();
+                    ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+
+                    // Cek apakah bintang sudah sampai bawah layar
+                    if (b.y < canvas.height - 10) {
+                        semuaSampaiBawah = false;
+                    }
+                });
+
+                // Jika semua bintang sudah sampai bawah, ledakkan di bawah lalu lanjut game baru!
+                if (semuaSampaiBawah && bintangJatuhList.length > 0) {
+                    // Panggil efek ledakan di bagian bawah layar
+                    for (let k = 0; k < 5; k++) {
+                        buatLedakan(Math.random() * canvas.width, canvas.height - 20, '#ffde59');
+                    }
+                    bintangJatuhList = []; // Bersihkan daftar hujan bintang
+                    
+                    setTimeout(() => {
+                        inisialisasiLevel(); // Lanjut ke tantangan berikutnya
+                    }, 1000);
+                }
+            }
+
+            // Gambar Partikel Ledakan
+            for (let i = partikelList.length - 1; i >= 0; i--) {
+                let p = partikelList[i]; p.x += p.kecepatanX; p.y += p.kecepatanY;
+                p.hidup--; p.alfa = p.hidup / 45;
+                if (p.hidup <= 0) partikelList.splice(i, 1); else {
+                    ctx.save(); ctx.globalAlpha = p.alfa;
+                    ctx.fillStyle = p.warna; ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fill(); ctx.restore();
+                }
+            }
+
+            // Gambar Bidikan Target
+            if(mouseX > 0 && mouseX < canvas.width && mouseY > 0 && mouseY < canvas.height) {
+                ctx.strokeStyle = "#00ffff"; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(mouseX - 15, mouseY); ctx.lineTo(mouseX + 15, mouseY); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(mouseX, mouseY - 15); ctx.lineTo(mouseX, mouseY + 15); ctx.stroke();
+                ctx.fillStyle = "#ff0054"; ctx.beginPath(); ctx.arc(mouseX, mouseY, 4, 0, Math.PI * 2); ctx.fill();
+            }
+
+            requestAnimationFrame(updateDanGambar);
+        }
+
+        // --- 5. INTERAKSI MOUSE & KLIK ---
+        canvas.addEventListener("mousemove", function(event) {
+            const rect = canvas.getBoundingClientRect();
+            mouseX = event.clientX - rect.left;
+            mouseY = event.clientY - rect.top;
+        });
+
+        canvas.addEventListener("click", function(event) {
+            // Hanya bisa menembak saat status game "MAIN"
+            if (statusGame !== "MAIN") return;
+
+            const rect = canvas.getBoundingClientRect();
+            const klikX = event.clientX - rect.left; 
+            const klikY = event.clientY - rect.top;
+            
+            mainkanSuaraLaser();
+            laserList.push({ targetX: klikX, targetY: klikY, life: 8 });
+
+            objekAngkasa.forEach(obj => {
+                if (!obj.ditemukan) {
+                    const jarak = Math.sqrt((klikX - obj.x) ** 2 + (klikY - obj.y) ** 2);
+                    if (jarak < obj.ukuranEmoji / 2) {
+                        obj.ditemukan = true;
+                        buatLedakan(obj.x, obj.y, obj.warnaLedakan);
+                        
+                        if (obj.adalahTarget) {
+                            skorPutaran++;
+                            document.getElementById("score").innerText = skorPutaran;
+                            
+                            // Jika 3 target sudah hancur, masuk ke sesi perayaan 10 detik!
+                            if (skorPutaran === targetTotalPerPutaran) {
+                                mulaiSesiPerayaan();
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+        // Jalankan Game
+        inisialisasiLevel(); 
+        updateDanGambar();
+
+    </script>
+
+</body>
+</html>
