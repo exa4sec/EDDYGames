@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Misi Galaksi 10 Planet: Hujan Bintang & Perayaan 🚀</title>
+    <title>Misi Galaksi: Belajar huruf dan angka! 🚀</title>
     <style>
         /* ==========================================
            TEMA ANGKASA: ORANYE MATAHARI & UNGU GALAKSI
@@ -146,7 +146,7 @@
 <body>
 
     <header>
-        <h1>🚀 Misi Galaksi 10 Planet 🌌</h1>
+        <h1>🚀 Misi Galaksi Belajar Huruf & Angka 🌌</h1>
     </header>
 
     <div class="info-banner">
@@ -160,7 +160,7 @@
         <div id="popupModal">
             <h2>🎉 KEREN BANGET! 🎉</h2>
             <div id="popupKarakter" class="popup-letter">A</div>
-            <p>Yuk teriakkan huruf/angka ini sebanyak <b>5 kali</b>,<br>lalu teriak <b>HOREEE!</b> Dengan suara keras!</p>
+            <p>Yuk teriakkan huruf/angka ini <b>5 kali</b>,<br>lalu teriak <b>HOREEE!</b> bersama-sama!</p>
             <div class="timer-badge">Waktu: <span id="timerCount">10</span> detik</div>
         </div>
     </div>
@@ -216,8 +216,10 @@
             whiteNoise.start(); whiteNoise.stop(audioCtx.currentTime + 0.4);
         }
 
-        // --- 2. DATA BANK SOAL & VARIABEL GLOBAL ---
-        const bankSoal = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("");
+        // --- 2. DATA BANK SOAL & SISTEM PENGACAK TANPA PENGULANGAN ---
+        const bankSoalMaster = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789".split("");
+        let sisaSoal = []; // Wadah penampung soal yang belum tampil
+
         let targetSaatIni = "";
         let skorPutaran = 0;
         const targetTotalPerPutaran = 3;
@@ -225,17 +227,35 @@
 
         let laserList = [];
         let partikelList = [];
-        let bintangJatuhList = []; // Array untuk efek hujan bintang
+        let bintangJatuhList = [];
         const daftarEmoji = ["🌍", "🌕", "🪐", "☀️", "☄️", "⭐", "🌑"];
         let objekAngkasa = [];
 
         let mouseX = -100;
         let mouseY = -100;
 
-        // --- 3. FUNGSI UTAMA GAME ---
+        // Fungsi Mengocok Array (Algoritma Fisher-Yates Shuffle)
+        function kocokArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                let j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // --- 3. FUNGSI PENGAMBILAN SOAL TANPA PENGULANGAN ---
+        function ambilKarakterUnik() {
+            // Kalau wadah sisa soal sudah kosong, kocok ulang master soal ke dalam sisaSoal
+            if (sisaSoal.length === 0) {
+                sisaSoal = [...bankSoalMaster]; // Salin master soal
+                kocokArray(sisaSoal);        // Kocok acak posisinya
+            }
+            // Ambil dan hapus elemen paling depan dari sisaSoal
+            return sisaSoal.shift();
+        }
+
         function acakKarakterBaru() {
-            const indexAcak = Math.floor(Math.random() * bankSoal.length);
-            targetSaatIni = bankSoal[indexAcak];
+            targetSaatIni = ambilKarakterUnik(); // Ambil dari antrean unik
             document.getElementById("targetLabel").innerText = targetSaatIni;
             skorPutaran = 0;
             document.getElementById("score").innerText = skorPutaran;
@@ -292,7 +312,6 @@
             }
         }
 
-        // --- FUNGSI SESI PERAYAAN (10 DETIK) ---
         function mulaiSesiPerayaan() {
             statusGame = "PERAYAAN";
             document.getElementById("popupKarakter").innerText = targetSaatIni;
@@ -301,7 +320,7 @@
             const timerSpan = document.getElementById("timerCount");
             modal.classList.add("show");
 
-            let sisaWaktu = 10; // 10 detik sesuai permintaan
+            let sisaWaktu = 10;
             timerSpan.innerText = sisaWaktu;
 
             let hitungMundur = setInterval(() => {
@@ -310,9 +329,8 @@
 
                 if (sisaWaktu <= 0) {
                     clearInterval(hitungMundur);
-                    modal.classList.remove("show"); // Tutup popup
+                    modal.classList.remove("show");
                     
-                    // LEDAKKAN SEMUA SISA PLANET DI LAYAR SECARA BERSAMAAN!
                     objekAngkasa.forEach(obj => {
                         if (!obj.ditemukan) {
                             obj.ditemukan = true;
@@ -320,23 +338,20 @@
                         }
                     });
 
-                    // LANJUT KE EFEK HUJAN BINTANG
                     mulaiHujanBintang();
                 }
             }, 1000);
         }
 
-        // --- FUNGSI HUJAN BINTANG JATUH ---
         function mulaiHujanBintang() {
             statusGame = "HUJAN_BINTANG";
             bintangJatuhList = [];
 
-            // Buat banyak bintang memenuhi lebar layar dari atas
             for (let i = 0; i < 40; i++) {
                 bintangJatuhList.push({
                     x: Math.random() * canvas.width,
-                    y: Math.random() * -200 - 20, // Muncul bergelombang dari atas layar
-                    kecepatanY: Math.random() * 3 + 3, // Kecepatan jatuh
+                    y: Math.random() * -200 - 20,
+                    kecepatanY: Math.random() * 3 + 3,
                     radius: Math.random() * 4 + 2,
                     warna: ['#ffde59', '#00ffff', '#ff5400', '#ffffff'][Math.floor(Math.random() * 4)]
                 });
@@ -374,7 +389,6 @@
                 ctx.restore(); laser.life--; if (laser.life <= 0) laserList.splice(i, 1);
             }
 
-            // Update posisi planet HANYA SAAT STATUS "MAIN"
             if (statusGame === "MAIN") {
                 for (let i = 0; i < objekAngkasa.length; i++) {
                     let obj1 = objekAngkasa[i];
@@ -419,7 +433,6 @@
                 }
             }
 
-            // Render Planet
             objekAngkasa.forEach(obj => {
                 if (!obj.ditemukan) {
                     ctx.save(); 
@@ -443,14 +456,12 @@
                 }
             });
 
-            // LOGIKA & RENDER HUJAN BINTANG JATUH
             if (statusGame === "HUJAN_BINTANG") {
                 let semuaSampaiBawah = true;
 
                 bintangJatuhList.forEach(b => {
                     b.y += b.kecepatanY;
 
-                    // Gambar Bintang Jatuh
                     ctx.save();
                     ctx.shadowBlur = 10;
                     ctx.shadowColor = b.warna;
@@ -460,27 +471,23 @@
                     ctx.fill();
                     ctx.restore();
 
-                    // Cek apakah bintang sudah sampai bawah layar
                     if (b.y < canvas.height - 10) {
                         semuaSampaiBawah = false;
                     }
                 });
 
-                // Jika semua bintang sudah sampai bawah, ledakkan di bawah lalu lanjut game baru!
                 if (semuaSampaiBawah && bintangJatuhList.length > 0) {
-                    // Panggil efek ledakan di bagian bawah layar
                     for (let k = 0; k < 5; k++) {
                         buatLedakan(Math.random() * canvas.width, canvas.height - 20, '#ffde59');
                     }
-                    bintangJatuhList = []; // Bersihkan daftar hujan bintang
+                    bintangJatuhList = [];
                     
                     setTimeout(() => {
-                        inisialisasiLevel(); // Lanjut ke tantangan berikutnya
+                        inisialisasiLevel();
                     }, 1000);
                 }
             }
 
-            // Gambar Partikel Ledakan
             for (let i = partikelList.length - 1; i >= 0; i--) {
                 let p = partikelList[i]; p.x += p.kecepatanX; p.y += p.kecepatanY;
                 p.hidup--; p.alfa = p.hidup / 45;
@@ -492,7 +499,6 @@
                 }
             }
 
-            // Gambar Bidikan Target
             if(mouseX > 0 && mouseX < canvas.width && mouseY > 0 && mouseY < canvas.height) {
                 ctx.strokeStyle = "#00ffff"; ctx.lineWidth = 2;
                 ctx.beginPath(); ctx.moveTo(mouseX - 15, mouseY); ctx.lineTo(mouseX + 15, mouseY); ctx.stroke();
@@ -511,7 +517,6 @@
         });
 
         canvas.addEventListener("click", function(event) {
-            // Hanya bisa menembak saat status game "MAIN"
             if (statusGame !== "MAIN") return;
 
             const rect = canvas.getBoundingClientRect();
@@ -532,7 +537,6 @@
                             skorPutaran++;
                             document.getElementById("score").innerText = skorPutaran;
                             
-                            // Jika 3 target sudah hancur, masuk ke sesi perayaan 10 detik!
                             if (skorPutaran === targetTotalPerPutaran) {
                                 mulaiSesiPerayaan();
                             }
