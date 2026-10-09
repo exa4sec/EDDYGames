@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Misi Galaksi: Belajar huruf dan angka! 🚀</title>
+    <title>Misi Galaksi: Tantangan Timer & Target! 🚀</title>
     <style>
         /* ==========================================
            TEMA ANGKASA: ORANYE MATAHARI & UNGU GALAKSI
@@ -70,6 +70,9 @@
             border-radius: 10px; border: 2px dashed #fff; text-align: center;
             font-size: 1.1rem; font-weight: bold; margin-bottom: 15px;
             box-shadow: 0 4px 0 rgba(0,0,0,0.15); width: 100%; max-width: 500px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
         }
 
         .game-board-container {
@@ -84,8 +87,8 @@
 
         .score-board { font-size: 1.1rem; font-weight: bold; color: #ffd166; text-shadow: 2px 2px 0px #000; margin-bottom: 15px; }
 
-        /* KOTAK POPUP PERAYAAN */
-        #popupModal {
+        /* KOTAK POPUP UMUM (AWAL MISI, PERAYAAN, & KEGAGALAN) */
+        .modal-popup {
             position: absolute;
             top: 50%;
             left: 50%;
@@ -103,20 +106,20 @@
             display: none;
         }
 
-        #popupModal.show {
+        .modal-popup.show {
             display: block;
             transform: translate(-50%, -50%) scale(1);
         }
 
-        #popupModal h2 {
-            font-size: 1.5rem;
+        .modal-popup h2 {
+            font-size: 1.4rem;
             color: #ffde59;
             margin-bottom: 5px;
             text-shadow: 2px 2px 0 #000;
         }
 
         .popup-letter {
-            font-size: 4rem;
+            font-size: 3.5rem;
             font-weight: bold;
             color: #fff;
             background: rgba(0,0,0,0.3);
@@ -125,15 +128,15 @@
             text-shadow: 3px 3px 0 #ff0054;
         }
 
-        #popupModal p {
-            font-size: 0.95rem;
+        .modal-popup p {
+            font-size: 0.9rem;
             line-height: 1.4;
             margin-bottom: 10px;
             color: #f1f1f1;
         }
 
-        .timer-badge {
-            font-size: 1.1rem;
+        .badge-info {
+            font-size: 1.05rem;
             background: #ff5400;
             padding: 4px 12px;
             border-radius: 20px;
@@ -146,22 +149,38 @@
 <body>
 
     <header>
-        <h1>🚀 Misi Galaksi Belajar Huruf & Angka 🌌</h1>
+        <h1>🚀 Misi Galaksi 10 Planet 🌌</h1>
     </header>
 
     <div class="info-banner">
-        Cari dan tembak 3 planet yang membawa: <span id="targetLabel" style="color: #d32f2f; font-size: 1.4rem; font-weight: bold; background: #fff; padding: 2px 6px; border-radius: 6px;">?</span>
+        <span>Target: <span id="targetLabel" style="color: #d32f2f; font-size: 1.3rem; font-weight: bold; background: #fff; padding: 2px 8px; border-radius: 6px;">?</span></span>
+        <span>Waktu: <span id="gameTimer" style="color: #00ffff; font-size: 1.2rem; font-weight: bold;">15</span>s</span>
     </div>
     
     <div class="game-board-container">
         <canvas id="spaceCanvas" width="450" height="380"></canvas>
 
-        <!-- KOTAK POPUP PERAYAAN 10 DETIK -->
-        <div id="popupModal">
+        <!-- 1. POPUP AWAL MISI -->
+        <div id="popupMulai" class="modal-popup">
+            <h2>🎯 MISI BARU! 🎯</h2>
+            <p>Cari dan tembak 3 planet dengan huruf/angka:</p>
+            <div id="mulaiKarakter" class="popup-letter">A</div>
+            <div class="badge-info">Siap-siap ya!</div>
+        </div>
+
+        <!-- 2. POPUP PERAYAAN (10 DETIK) -->
+        <div id="popupPerayaan" class="modal-popup">
             <h2>🎉 KEREN BANGET! 🎉</h2>
-            <div id="popupKarakter" class="popup-letter">A</div>
-            <p>Yuk teriakkan huruf/angka ini <b>5 kali</b>,<br>lalu teriak <b>HOREEE!</b> bersama-sama!</p>
-            <div class="timer-badge">Waktu: <span id="timerCount">10</span> detik</div>
+            <div id="perayaanKarakter" class="popup-letter">A</div>
+            <p>Yuk teriakkan <b>5 kali</b>,<br>lalu teriak <b>HOREEE!</b> bersama!</p>
+            <div class="badge-info">Waktu: <span id="timerPerayaan">10</span>s</div>
+        </div>
+
+        <!-- 3. POPUP KEGAGALAN (WAKTU HABIS) -->
+        <div id="popupGagal" class="modal-popup" style="background: linear-gradient(135deg, #d90429, #370617);">
+            <h2>⏳ WAKTU HABIS! ⏳</h2>
+            <p>Belum sempat terkumpul semua.<br>Yuk kita coba lagi misi ini!</p>
+            <div class="badge-info">Mengulang Misi...</div>
         </div>
     </div>
     
@@ -171,13 +190,10 @@
         const canvas = document.getElementById("spaceCanvas");
         const ctx = canvas.getContext("2d");
 
-        // --- 1. WEB AUDIO API (EFEK SUARA SINTETIS) ---
+        // --- 1. WEB AUDIO API ---
         let audioCtx = null;
-
         function inisialisasiAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
+            if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
         }
 
         function mainkanSuaraLaser() {
@@ -190,10 +206,8 @@
             osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.15);
             gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
             gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-            osc.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.15);
+            osc.connect(gainNode); gainNode.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.15);
         }
 
         function mainkanSuaraLedakan() {
@@ -216,14 +230,17 @@
             whiteNoise.start(); whiteNoise.stop(audioCtx.currentTime + 0.4);
         }
 
-        // --- 2. DATA BANK SOAL & SISTEM PENGACAK TANPA PENGULANGAN ---
-        const bankSoalMaster = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789".split("");
-        let sisaSoal = []; // Wadah penampung soal yang belum tampil
+        // --- 2. VARIABEL & BANK SOAL ---
+        const bankSoalMaster = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("");
+        let sisaSoal = [];
 
         let targetSaatIni = "";
         let skorPutaran = 0;
         const targetTotalPerPutaran = 3;
-        let statusGame = "MAIN"; // "MAIN", "PERAYAAN", "HUJAN_BINTANG"
+        let statusGame = "PAUSE"; // "PAUSE", "MAIN", "PERAYAAN", "HUJAN_BINTANG", "GAGAL"
+        
+        let sisaWaktuGame = 15;
+        let intervalGameTimer = null;
 
         let laserList = [];
         let partikelList = [];
@@ -234,7 +251,6 @@
         let mouseX = -100;
         let mouseY = -100;
 
-        // Fungsi Mengocok Array (Algoritma Fisher-Yates Shuffle)
         function kocokArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 let j = Math.floor(Math.random() * (i + 1));
@@ -243,22 +259,12 @@
             return array;
         }
 
-        // --- 3. FUNGSI PENGAMBILAN SOAL TANPA PENGULANGAN ---
         function ambilKarakterUnik() {
-            // Kalau wadah sisa soal sudah kosong, kocok ulang master soal ke dalam sisaSoal
             if (sisaSoal.length === 0) {
-                sisaSoal = [...bankSoalMaster]; // Salin master soal
-                kocokArray(sisaSoal);        // Kocok acak posisinya
+                sisaSoal = [...bankSoalMaster];
+                kocokArray(sisaSoal);
             }
-            // Ambil dan hapus elemen paling depan dari sisaSoal
             return sisaSoal.shift();
-        }
-
-        function acakKarakterBaru() {
-            targetSaatIni = ambilKarakterUnik(); // Ambil dari antrean unik
-            document.getElementById("targetLabel").innerText = targetSaatIni;
-            skorPutaran = 0;
-            document.getElementById("score").innerText = skorPutaran;
         }
 
         function buatLedakan(x, y, warnaDasar) {
@@ -277,15 +283,28 @@
             }
         }
 
-        function inisialisasiLevel() {
+        // --- 3. ALUR LEVEL & POPUP AWAL MISI ---
+        function inisialisasiLevel(ulangiTarget = false) {
             objekAngkasa = [];
             skorPutaran = 0;
             laserList = [];
             partikelList = [];
             bintangJatuhList = [];
-            statusGame = "MAIN";
-            acakKarakterBaru();
+            
+            if (!ulangiTarget) {
+                targetSaatIni = ambilKarakterUnik(); // Ambil soal baru kalau bukan karena gagal
+            }
 
+            document.getElementById("targetLabel").innerText = targetSaatIni;
+            document.getElementById("score").innerText = skorPutaran;
+
+            // Munculkan Popup Awal Misi Selama 2.5 Detik
+            document.getElementById("mulaiKarakter").innerText = targetSaatIni;
+            const modalMulai = document.getElementById("popupMulai");
+            modalMulai.classList.add("show");
+            statusGame = "PAUSE";
+
+            // Buat 10 Planet
             let indeksTarget = [];
             while(indeksTarget.length < 3) {
                 let randIdx = Math.floor(Math.random() * 10);
@@ -310,26 +329,66 @@
                     ditemukan: false
                 });
             }
+
+            // Setelah 2.5 detik, tutup pop-up awal dan mulai game + timer 15 detik
+            setTimeout(() => {
+                modalMulai.classList.remove("show");
+                statusGame = "MAIN";
+                mulaiTimerMisi();
+            }, 2500);
         }
 
+        // --- TIMER 15 DETIK PER MISI ---
+        function mulaiTimerMisi() {
+            sisaWaktuGame = 15;
+            document.getElementById("gameTimer").innerText = sisaWaktuGame;
+            clearInterval(intervalGameTimer);
+
+            intervalGameTimer = setInterval(() => {
+                if (statusGame === "MAIN") {
+                    sisaWaktuGame--;
+                    document.getElementById("gameTimer").innerText = sisaWaktuGame;
+
+                    if (sisaWaktuGame <= 0) {
+                        clearInterval(intervalGameTimer);
+                        triggerKegagalan(); // Waktu habis!
+                    }
+                }
+            }, 1000);
+        }
+
+        // --- TRIGGER KETIKA WAKTU HABIS ---
+        function triggerKegagalan() {
+            statusGame = "GAGAL";
+            const modalGagal = document.getElementById("popupGagal");
+            modalGagal.classList.add("show");
+
+            setTimeout(() => {
+                modalGagal.classList.remove("show");
+                inisialisasiLevel(true); // Ulangi misi dengan target huruf yang sama
+            }, 2500);
+        }
+
+        // --- SESI PERAYAAN (10 DETIK) ---
         function mulaiSesiPerayaan() {
             statusGame = "PERAYAAN";
-            document.getElementById("popupKarakter").innerText = targetSaatIni;
-            
-            const modal = document.getElementById("popupModal");
-            const timerSpan = document.getElementById("timerCount");
-            modal.classList.add("show");
+            clearInterval(intervalGameTimer); // Hentikan timer game
+
+            document.getElementById("perayaanKarakter").innerText = targetSaatIni;
+            const modalPerayaan = document.getElementById("popupPerayaan");
+            const timerPerayaanSpan = document.getElementById("timerPerayaan");
+            modalPerayaan.classList.add("show");
 
             let sisaWaktu = 10;
-            timerSpan.innerText = sisaWaktu;
+            timerPerayaanSpan.innerText = sisaWaktu;
 
-            let hitungMundur = setInterval(() => {
+            let hitungMundurPerayaan = setInterval(() => {
                 sisaWaktu--;
-                timerSpan.innerText = sisaWaktu;
+                timerPerayaanSpan.innerText = sisaWaktu;
 
                 if (sisaWaktu <= 0) {
-                    clearInterval(hitungMundur);
-                    modal.classList.remove("show");
+                    clearInterval(hitungMundurPerayaan);
+                    modalPerayaan.classList.remove("show");
                     
                     objekAngkasa.forEach(obj => {
                         if (!obj.ditemukan) {
@@ -538,6 +597,7 @@
                             document.getElementById("score").innerText = skorPutaran;
                             
                             if (skorPutaran === targetTotalPerPutaran) {
+                                clearInterval(intervalGameTimer); // Matikan timer saat misi sukses
                                 mulaiSesiPerayaan();
                             }
                         }
