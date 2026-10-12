@@ -350,11 +350,26 @@
 
     <!-- Penjelasan untuk Orang Tua -->
     <div class="parent-banner">
-        🌟 <strong>Haiiii..!!! ayah & bunda:</strong> EDDYGames adalah wadah game edukasi interaktif untuk melatih kognitif, bahasa, sosial emosional, nilai agama dan moral, motorik, seni anak tanpa khawatir konten negatif.
+        🌟 <strong>Apa sih EDDYGames itu??</strong> 
+          <!-- Tombol Mini -->
+        <button onclick="openapa()" class="action-btn-mini"> 🌟 cari tau </button>
+    </div>
+          <!-- Kotak Pop-up QRIS -->
+    <div id="apa" class="modal">
+        <div class="modal-content">
+            <h3 style="color: #ffd166; font-size: 1.1rem;">Apa itu EDDYGames??</h3>
+           
+            <p style="font-size: 0.72rem; color: #f1f1f1; margin-top: 5px; line-height: 1.3; text-align: left;">
+               EDDYGames adalah wadah game edukasi interaktif untuk melatih kognitif, bahasa, sosial emosional, nilai agama dan moral, motorik, seni anak tanpa khawatir konten negatif.
         bagi ayah bunda yang belum mengenal seberapa pentingnya 6 aspek itu buat pertumbuhan anak, ayah buda bisa belajar dari buku digital yang udah tim kami sediakan yang ada di link bawah ya..!!.
         bukan cuman panduan buat ayah dan bunda aja loh, kami juga merancang buku digital agar game edukasi yang kami kembangkan bisa membantu buah hati ayah bunda untuk terus berkembang dari segi 6 aspek yang penting itu.
         emang seberapa penting sih 6 aspek itu buat pertumbuhan anak??,  ayah dan bunda bisa mengetahuinya di buku digital yang sudah kami sediakan di link yang ada di bawah halaman.
         <br> selamat bersenang senang dengan si kecil ayaahh, bundaaa...!!!.
+            </p>
+            
+            <button onclick="closeapa()" class="close-btn">Tutup</button>
+        </div>
+    </div>
     </div>
 
     <!-- Rak Game / Portal ala Friv -->
@@ -454,6 +469,12 @@ Temukan panduan parenting yang membantu orang tua memahami dunia anak lebih dala
 
     <!-- JavaScript untuk Pop-up -->
     <script>
+         function openapa() {
+            document.getElementById('apa').style.display = 'flex';
+             
+         function closeapa() {
+            document.getElementById('apa').style.display = 'flex';
+             
         function openQRIS() {
             document.getElementById('qrisModal').style.display = 'flex';
         }
